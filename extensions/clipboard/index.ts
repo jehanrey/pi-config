@@ -128,12 +128,14 @@ function formatThread(ctx: { sessionManager: { getBranch(): unknown[] } }): stri
 }
 
 export default function (pi: ExtensionAPI) {
-	pi.registerCommand("copy", {
-		description: "Copy everything produced after the latest user prompt to the clipboard.",
-		handler: async (_args, ctx) => {
-			const text = getLatestResponseText(ctx);
+	pi.registerCommand("copy-to-clipboard", {
+		description: "Copy the latest response turn to the clipboard, or pass --all to copy the full thread as Markdown.",
+		handler: async (args, ctx) => {
+			const copyAll = (args ?? "").includes("--all");
+			const text = copyAll ? formatThread(ctx).trim() : getLatestResponseText(ctx);
+
 			if (!text) {
-				ctx.ui.notify("No response found to copy.", "warning");
+				ctx.ui.notify(copyAll ? "No thread content found to copy." : "No response found to copy.", "warning");
 				return;
 			}
 
@@ -143,26 +145,12 @@ export default function (pi: ExtensionAPI) {
 				return;
 			}
 
-			ctx.ui.notify(`Copied latest response turn (${text.length.toLocaleString()} chars).`, "info");
-		},
-	});
-
-	pi.registerCommand("copy-all", {
-		description: "Copy the current thread to the clipboard as Markdown.",
-		handler: async (_args, ctx) => {
-			const text = formatThread(ctx).trim();
-			if (!text) {
-				ctx.ui.notify("No thread content found to copy.", "warning");
-				return;
-			}
-
-			const result = copyToClipboard(text);
-			if (!result.ok) {
-				ctx.ui.notify(`Copy all failed: ${result.error}`, "error");
-				return;
-			}
-
-			ctx.ui.notify(`Copied thread (${text.length.toLocaleString()} chars).`, "info");
+			ctx.ui.notify(
+				copyAll
+					? `Copied thread (${text.length.toLocaleString()} chars).`
+					: `Copied latest response turn (${text.length.toLocaleString()} chars).`,
+				"info",
+			);
 		},
 	});
 }
