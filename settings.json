@@ -1,10 +1,17 @@
 {
   "lastChangelogVersion": "0.74.1",
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.5",
-  "defaultThinkingLevel": "medium",
+  "defaultProvider": "github-copilot",
+  "defaultModel": "gpt-5.4-mini",
+  "defaultThinkingLevel": "low",
+  "theme": "github-dark-colorblind",
   "packages": [
-    "npm:my-pi-themes"
-  ],
-  "theme": "tokyo-dark"
+    "npm:pi-total-recall",
+    {
+      "source": "npm:@victor-software-house/pi-curated-themes",
+      "themes": [
+        "+themes/github-dark-colorblind.json"
+      ]
+    },
+    "npm:@spences10/pi-themes"
+  ]
 }

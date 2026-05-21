@@ -1,0 +1,9 @@
+{
+  "step_by_step_default": true,
+  "ask_before_implementing": true,
+  "ask_before_file_edits": true,
+  "prefer_diagnose_first": true,
+  "allow_autofix": false,
+  "verbosity": "medium",
+  "interaction_mode": "step-by-step"
+}

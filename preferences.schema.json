@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/pi-config-sync/preferences.schema.json",
+  "title": "Pi interaction preferences",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "step_by_step_default": {
+      "type": "boolean",
+      "default": true,
+      "description": "Prefer diagnose/explain first, then ask before acting."
+    },
+    "ask_before_implementing": {
+      "type": "boolean",
+      "default": true,
+      "description": "Ask for approval before making code or file changes."
+    },
+    "ask_before_file_edits": {
+      "type": "boolean",
+      "default": true,
+      "description": "Pause before editing files unless the user explicitly asked to proceed."
+    },
+    "prefer_diagnose_first": {
+      "type": "boolean",
+      "default": true,
+      "description": "Start with diagnosis, explanation, and options instead of jumping to fixes."
+    },
+    "allow_autofix": {
+      "type": "boolean",
+      "default": false,
+      "description": "Permit automatic fixes without asking first."
+    },
+    "verbosity": {
+      "type": "string",
+      "enum": ["low", "medium", "high"],
+      "default": "medium",
+      "description": "How detailed the assistant should be when explaining options and decisions."
+    },
+    "interaction_mode": {
+      "type": "string",
+      "enum": ["step-by-step", "direct"],
+      "default": "step-by-step",
+      "description": "Overall interaction style to prefer."
+    }
+  }
+}
