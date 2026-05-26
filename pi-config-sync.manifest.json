@@ -1,6 +1,6 @@
 {
 	"version": 1,
-	"exportedAt": "2026-05-21T10:47:59.363Z",
+	"exportedAt": "2026-05-26T09:28:18.789Z",
 	"host": "trv3892",
 	"configDir": "/Users/jreyes/.pi/agent",
 	"managedFiles": [
@@ -13,6 +13,7 @@
 		"extensions/thinking-phrases/phrases.txt",
 		"extensions/usage-report/index.ts",
 		"settings.json",
+		"skills/triage-review-comment/SKILL.md",
 		"themes/electron-highlighter.json",
 		"themes/github-dark-default.json"
 	],
@@ -24,9 +25,9 @@
 		"APPEND_SYSTEM.md",
 		"models.json",
 		"prompts/**",
-		"skills/**",
 		"extensions/**",
-		"themes/**"
+		"themes/**",
+		"skills/triage-review-comment/**"
 	],
 	"excludedRoots": [
 		"auth.json",

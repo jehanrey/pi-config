@@ -20,7 +20,12 @@ const MANAGED_FILES = [
 	"models.json",
 ];
 
-const MANAGED_DIRS = ["prompts", "skills", "extensions", "themes"];
+const MANAGED_DIRS = ["prompts", "extensions", "themes"];
+
+// Only sync skills authored in this config repo. Package-provided or third-party
+// skills should remain installed through pi/package mechanisms instead of being
+// copied into the config sync checkout.
+const MANAGED_SKILL_DIRS = ["triage-review-comment"];
 
 const EXCLUDED_PATHS = new Set([
 	"auth.json",
@@ -114,9 +119,17 @@ async function walkFiles(base: string, relativeDir: string, out: string[]): Prom
 	for (const entry of await readdir(fullDir, { withFileTypes: true })) {
 		const relativePath = relativeDir ? `${relativeDir}/${entry.name}` : entry.name;
 		if (shouldExclude(relativePath)) continue;
+		const fullPath = path.join(base, relativePath);
 		if (entry.isDirectory()) {
 			await walkFiles(base, relativePath, out);
-		} else if (entry.isFile() || entry.isSymbolicLink()) {
+		} else if (entry.isSymbolicLink()) {
+			const target = await stat(fullPath);
+			if (target.isDirectory()) {
+				await walkFiles(base, relativePath, out);
+			} else if (target.isFile()) {
+				out.push(relativePath);
+			}
+		} else if (entry.isFile()) {
 			out.push(relativePath);
 		}
 	}
@@ -128,6 +141,10 @@ async function listManagedFiles(base: string): Promise<string[]> {
 		if (!shouldExclude(file) && existsSync(path.join(base, file))) files.push(file);
 	}
 	for (const dir of MANAGED_DIRS) {
+		if (!shouldExclude(dir)) await walkFiles(base, dir, files);
+	}
+	for (const skill of MANAGED_SKILL_DIRS) {
+		const dir = `skills/${skill}`;
 		if (!shouldExclude(dir)) await walkFiles(base, dir, files);
 	}
 	return Array.from(new Set(files)).sort();
@@ -203,7 +220,11 @@ async function writeRepoManifest(config: SyncConfig, exportedFiles: string[]): P
 		host: hostname(),
 		configDir: config.configDir,
 		managedFiles: exportedFiles,
-		managedRoots: [...MANAGED_FILES, ...MANAGED_DIRS.map((dir) => `${dir}/**`)],
+		managedRoots: [
+			...MANAGED_FILES,
+			...MANAGED_DIRS.map((dir) => `${dir}/**`),
+			...MANAGED_SKILL_DIRS.map((skill) => `skills/${skill}/**`),
+		],
 		excludedRoots: Array.from(EXCLUDED_PATHS).sort(),
 	};
 	await writeFile(path.join(config.repoPath, REPO_MANIFEST), JSON.stringify(manifest, null, "\t") + "\n");
