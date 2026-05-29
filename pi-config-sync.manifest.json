@@ -1,8 +1,8 @@
 {
 	"version": 1,
-	"exportedAt": "2026-05-29T20:40:58.984Z",
+	"exportedAt": "2026-05-29T21:33:51.459Z",
 	"host": "trv3892",
-	"configDir": "/Users/jreyes/.pi/agent",
+	"configDir": "~/.pi/agent",
 	"managedFiles": [
 		"extensions/clipboard/index.ts",
 		"extensions/double-escape-clear.ts",
@@ -12,6 +12,9 @@
 		"extensions/thinking-phrases/index.ts",
 		"extensions/thinking-phrases/phrases.txt",
 		"extensions/usage-report/index.ts",
+		"memory/lessons.json",
+		"memory/manifest.json",
+		"memory/semantic.json",
 		"settings.json",
 		"skills/triage-review-comment/SKILL.md",
 		"themes/electron-highlighter.json",
@@ -27,7 +30,8 @@
 		"prompts/**",
 		"extensions/**",
 		"themes/**",
-		"skills/triage-review-comment/**"
+		"skills/triage-review-comment/**",
+		"memory/**"
 	],
 	"excludedRoots": [
 		"auth.json",

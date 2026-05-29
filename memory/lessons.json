@@ -1,0 +1,61 @@
+{
+	"version": 1,
+	"items": [
+		{
+			"id": "75d0cb2b-59e9-4f12-8361-1d0d58e0764f",
+			"rule": "During review-comment triage, keep analysis scoped to the reviewed code unless the user explicitly asks for broader context. Do not include a 'same issue elsewhere' or wider-audit suggestion by default.",
+			"category": "review-triage",
+			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "39f7803e-5a0f-40b3-8557-a71d031772b5",
+			"rule": "In hs-web-app under pi, Volta yarn shims can fail because pi sets _VOLTA_TOOL_RECURSION=1. Run Node/Yarn commands as `env -u _VOLTA_TOOL_RECURSION yarn ...` so Volta can resolve the project-pinned Node/Yarn.",
+			"category": "tooling",
+			"negative": false,
+			"source": "user"
+		},
+		{
+			"id": "13bd29e6-7500-4c22-85db-812d36aa5226",
+			"rule": "Do not let the current working directory determine the target for a change. First infer and confirm the user's intent and the runtime/application surface. For pi extension tweaks, default to the auto-discovered applied extension locations (`~/.pi/agent/extensions/` or `.pi/extensions/`) because those are what `/reload` loads; treat sync repos as copies unless explicitly asked to sync them.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "1a0fd194-e157-4aac-a408-0e1d2161cca9",
+			"rule": "Always take things step by step. Diagnose/explain first, then propose options and brainstorm with the user before implementing. Never build or fix anything without explicit approval. If the user wants to offload everything, they will say so explicitly.",
+			"category": "workflow",
+			"negative": false,
+			"source": "user"
+		},
+		{
+			"id": "56b2a70e-1d8d-45c3-a06d-6122981e20bc",
+			"rule": "Do not test or rely on a just-edited pi extension tool in the same session by calling the registered tool unless its runtime implementation has been verified active. File diffs can show new code while the loaded tool remains old; use /reload/new session and verify behavior, or avoid the tool.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "84158208-1024-4dce-8744-06985b478854",
+			"rule": "When the user asks a specific verification question, do not answer confidently unless verified. State uncertainty explicitly. If prior observed behavior contradicts the claim, trust the observation and do not repeat the action.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "e0279a80-fab0-4ca7-b871-eb6ad3becaa4",
+			"rule": "When working on pi extensions from ~/pi-config-sync, do not edit the sync repo as the runtime source by default. First identify and confirm the local/applied extension path, edit that path for behavior changes, and only update pi-config-sync intentionally when the user asks to sync/persist/distribute the change.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "ef46a0b1-491c-49d8-b404-9d699d126145",
+			"rule": "Do not implement scaffolding, component APIs, files, or inferred UI beyond the exact action the user explicitly approved. If the user asks to create only a folder, create only the folder and stop.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		}
+	]
+}
