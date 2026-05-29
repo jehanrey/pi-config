@@ -423,15 +423,21 @@ async function restoreSourceMap(backupPath: string): Promise<FileMap> {
 	return files;
 }
 
+async function pullRepoMain(repoPath: string): Promise<string> {
+	if (!existsSync(path.join(repoPath, ".git"))) throw new Error(`Repo path is not a git checkout: ${repoPath}`);
+	const { stdout, stderr } = await execFileAsync("git", ["-C", repoPath, "pull", "--ff-only", "origin", "main"]);
+	return [stdout.trim(), stderr.trim()].filter(Boolean).join("\n") || "Already up to date.";
+}
+
 export default function (pi: ExtensionAPI) {
 	pi.registerCommand("pi-config", {
-		description: "Sync pi config with a reviewable git checkout: init, status, export, import, restore.",
+		description: "Sync pi config with a reviewable git checkout: init, status, pull, export, import, restore.",
 		handler: async (rawArgs, ctx) => {
 			try {
 				const args = parseArgs(rawArgs ?? "");
 
 				if (!args.command || args.command === "help") {
-					ctx.ui.notify("Usage: /pi-config init [repo-path] | status | export [--dry-run] | import [--dry-run] [--yes] | restore [backup-name] [--dry-run] [--yes]", "info");
+					ctx.ui.notify("Usage: /pi-config init [repo-path] | status | pull | export [--dry-run] | import [--dry-run] [--yes] | restore [backup-name] [--dry-run] [--yes]", "info");
 					return;
 				}
 
@@ -452,6 +458,13 @@ export default function (pi: ExtensionAPI) {
 					if (!existsSync(config.repoPath)) throw new Error(`Repo path does not exist: ${config.repoPath}`);
 					const changes = planChanges(await fileMap(config.configDir), await fileMap(config.repoPath));
 					ctx.ui.notify(formatChanges(`Live config -> repo (${config.repoPath})`, changes), hasChanges(changes) ? "warning" : "info");
+					return;
+				}
+
+				if (args.command === "pull") {
+					if (!existsSync(config.repoPath)) throw new Error(`Repo path does not exist: ${config.repoPath}`);
+					const output = await pullRepoMain(config.repoPath);
+					ctx.ui.notify(`Pulled main in ${config.repoPath}\n\n${output}`, "info");
 					return;
 				}
 
