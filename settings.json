@@ -1,8 +1,8 @@
 {
   "lastChangelogVersion": "0.74.2",
-  "defaultProvider": "openai-codex",
+  "defaultProvider": "github-copilot",
   "defaultModel": "gpt-5.5",
-  "defaultThinkingLevel": "low",
+  "defaultThinkingLevel": "high",
   "theme": "github-dark-colorblind",
   "packages": [
     "npm:pi-total-recall",
@@ -13,5 +13,12 @@
       ]
     },
     "npm:@spences10/pi-themes"
-  ]
+  ],
+  "terminal": {
+    "imageWidthCells": 80
+  },
+  "compaction": {
+    "enabled": false
+  },
+  "hideThinkingBlock": true
 }

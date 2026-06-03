@@ -2,6 +2,13 @@
 	"version": 1,
 	"items": [
 		{
+			"id": "316ac7d7-0900-4965-aa79-3035bbe0e6aa",
+			"rule": "Do not pre-emptively add useCallback, useMemo, or similar React optimizations unless there is a concrete stability/performance requirement (e.g. dependency of another memoized value, debounced handler identity, memoized child boundary, effect cleanup identity). Prefer plain functions by default.",
+			"category": "coding",
+			"negative": true,
+			"source": "user"
+		},
+		{
 			"id": "75d0cb2b-59e9-4f12-8361-1d0d58e0764f",
 			"rule": "During review-comment triage, keep analysis scoped to the reviewed code unless the user explicitly asks for broader context. Do not include a 'same issue elsewhere' or wider-audit suggestion by default.",
 			"category": "review-triage",
@@ -34,6 +41,13 @@
 			"rule": "Do not test or rely on a just-edited pi extension tool in the same session by calling the registered tool unless its runtime implementation has been verified active. File diffs can show new code while the loaded tool remains old; use /reload/new session and verify behavior, or avoid the tool.",
 			"category": "workflow",
 			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "7a2a8777-423f-494b-be5d-96ed7baaa72b",
+			"rule": "When the user responds positively to a proposed implementation plan with phrases like 'that sounds reasonable', infer approval to implement unless they explicitly say not to write code or ask only for more discussion.",
+			"category": "workflow",
+			"negative": false,
 			"source": "user"
 		},
 		{

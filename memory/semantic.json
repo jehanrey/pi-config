@@ -2,6 +2,12 @@
 	"version": 1,
 	"items": [
 		{
+			"key": "pref.execution_plans",
+			"value": "When writing execution plans, be detailed and provide context plus firm implementation direction. Plans should be consumable by another model starting from zero context and executable correctly.",
+			"confidence": 0.95,
+			"source": "user"
+		},
+		{
 			"key": "pref.workflow.step_by_step_default",
 			"value": "When using pi, the user prefers a step-by-step workflow by default: diagnose/explain first, ask before making fixes or taking action, especially when the request is framed as a question or investigation.",
 			"confidence": 0.95,
