@@ -35,7 +35,7 @@ const MANAGED_DIRS = ["prompts", "extensions", "themes"];
 // Only sync skills authored in this config repo. Package-provided or third-party
 // skills should remain installed through pi/package mechanisms instead of being
 // copied into the config sync checkout.
-const MANAGED_SKILL_DIRS = ["triage-review-comment"];
+const MANAGED_SKILL_DIRS = ["ask-user-question", "dissect-plan", "triage-review-comment"];
 
 const EXCLUDED_PATHS = new Set([
 	"auth.json",
@@ -203,6 +203,31 @@ async function listManagedFiles(base: string): Promise<string[]> {
 		if (!shouldExclude(dir)) await walkFiles(base, dir, files);
 	}
 	return Array.from(new Set(files)).sort();
+}
+
+async function listSkillDirs(base: string): Promise<string[]> {
+	const skillsDir = path.join(base, "skills");
+	if (!existsSync(skillsDir)) return [];
+
+	const skills: string[] = [];
+	for (const entry of await readdir(skillsDir, { withFileTypes: true })) {
+		if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
+		const relativeDir = `skills/${entry.name}`;
+		if (shouldExclude(relativeDir)) continue;
+		if (existsSync(path.join(skillsDir, entry.name, "SKILL.md"))) skills.push(entry.name);
+	}
+	return skills.sort();
+}
+
+async function assertNoUnmanagedSkills(base: string, label: string): Promise<void> {
+	const unmanaged = (await listSkillDirs(base)).filter((skill) => !MANAGED_SKILL_DIRS.includes(skill));
+	if (unmanaged.length === 0) return;
+	throw new Error(`${label} contains skill folders that are not in MANAGED_SKILL_DIRS: ${unmanaged.map((skill) => `skills/${skill}`).join(", ")}. Add authored skills to the whitelist before syncing so they cannot be silently skipped.`);
+}
+
+async function assertNoUnmanagedSyncSkills(config: SyncConfig): Promise<void> {
+	await assertNoUnmanagedSkills(config.configDir, "Live config");
+	if (existsSync(config.repoPath)) await assertNoUnmanagedSkills(config.repoPath, "Repo");
 }
 
 async function hashFile(file: string): Promise<string> {
@@ -456,6 +481,7 @@ export default function (pi: ExtensionAPI) {
 
 				if (args.command === "status") {
 					if (!existsSync(config.repoPath)) throw new Error(`Repo path does not exist: ${config.repoPath}`);
+					await assertNoUnmanagedSyncSkills(config);
 					const changes = planChanges(await fileMap(config.configDir), await fileMap(config.repoPath));
 					ctx.ui.notify(formatChanges(`Live config -> repo (${config.repoPath})`, changes), hasChanges(changes) ? "warning" : "info");
 					return;
@@ -470,6 +496,7 @@ export default function (pi: ExtensionAPI) {
 
 				if (args.command === "export") {
 					await ensureRepoScaffold(config.repoPath);
+					await assertNoUnmanagedSyncSkills(config);
 					const source = await fileMap(config.configDir);
 					const changes = planChanges(source, await fileMap(config.repoPath));
 					if (args.dryRun) {
@@ -485,6 +512,7 @@ export default function (pi: ExtensionAPI) {
 
 				if (args.command === "import") {
 					if (!existsSync(config.repoPath)) throw new Error(`Repo path does not exist: ${config.repoPath}`);
+					await assertNoUnmanagedSyncSkills(config);
 					const source = await fileMap(config.repoPath);
 					if (source.size === 0 && !memoryFilesExist(config.repoPath)) throw new Error(`No managed config files found in repo; refusing to import from ${config.repoPath}`);
 					const changes = planChanges(source, await fileMap(config.configDir));

@@ -1,6 +1,6 @@
 {
 	"version": 1,
-	"exportedAt": "2026-06-11T14:35:27.367Z",
+	"exportedAt": "2026-06-11T14:44:07.158Z",
 	"host": "trv3892",
 	"configDir": "~/.pi/agent",
 	"managedFiles": [
@@ -17,6 +17,8 @@
 		"memory/manifest.json",
 		"memory/semantic.json",
 		"settings.json",
+		"skills/ask-user-question/SKILL.md",
+		"skills/dissect-plan/SKILL.md",
 		"skills/triage-review-comment/SKILL.md",
 		"themes/electron-highlighter.json",
 		"themes/github-dark-default.json"
@@ -31,6 +33,8 @@
 		"prompts/**",
 		"extensions/**",
 		"themes/**",
+		"skills/ask-user-question/**",
+		"skills/dissect-plan/**",
 		"skills/triage-review-comment/**",
 		"memory/**"
 	],
