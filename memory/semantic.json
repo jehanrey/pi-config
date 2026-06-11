@@ -15,7 +15,7 @@
 		},
 		{
 			"key": "project.pi_config_sync.authored_skills_allowlist",
-			"value": "In ~/pi-config-sync, only user-authored skills should be synced. Current allowlist is MANAGED_SKILL_DIRS = [\"triage-review-comment\"] in extensions/pi-config-sync/index.ts. When adding a new skill authored by the user, update this allowlist and manifest managedRoots/managedFiles accordingly.",
+			"value": "In ~/pi-config-sync, only user-authored skills should be synced. Current allowlist is MANAGED_SKILL_DIRS = [\"triage-review-comment\", \"dissect-plan\"] in extensions/pi-config-sync/index.ts. When adding a new skill authored by the user, update this allowlist and manifest managedRoots/managedFiles accordingly.",
 			"confidence": 0.95,
 			"source": "user"
 		}

@@ -23,6 +23,13 @@
 			"source": "user"
 		},
 		{
+			"id": "054c9373-e22c-41ea-b4b2-153c1bfb2eeb",
+			"rule": "When using the dissect-plan skill, the output should be a revised plan after discussion, not immediate implementation. Do not implement a dissected plan unless the user separately approves implementation.",
+			"category": "workflow",
+			"negative": false,
+			"source": "user"
+		},
+		{
 			"id": "13bd29e6-7500-4c22-85db-812d36aa5226",
 			"rule": "Do not let the current working directory determine the target for a change. First infer and confirm the user's intent and the runtime/application surface. For pi extension tweaks, default to the auto-discovered applied extension locations (`~/.pi/agent/extensions/` or `.pi/extensions/`) because those are what `/reload` loads; treat sync repos as copies unless explicitly asked to sync them.",
 			"category": "workflow",
@@ -32,6 +39,13 @@
 		{
 			"id": "1a0fd194-e157-4aac-a408-0e1d2161cca9",
 			"rule": "Always take things step by step. Diagnose/explain first, then propose options and brainstorm with the user before implementing. Never build or fix anything without explicit approval. If the user wants to offload everything, they will say so explicitly.",
+			"category": "workflow",
+			"negative": false,
+			"source": "user"
+		},
+		{
+			"id": "5642f44c-4db3-4b07-b5c1-ae02b8df8884",
+			"rule": "When creating or updating a user-authored pi skill in ~/.pi/agent/skills, also sync it into ~/pi-config-sync: copy the skill folder, update extensions/pi-config-sync/index.ts MANAGED_SKILL_DIRS, and update pi-config-sync.manifest.json managedFiles/managedRoots unless the user explicitly says not to sync it.",
 			"category": "workflow",
 			"negative": false,
 			"source": "user"
@@ -58,6 +72,13 @@
 			"source": "user"
 		},
 		{
+			"id": "cfa7a0cf-05fc-48bf-b971-64fac53cc52f",
+			"rule": "When creating or updating general pi skills for the user, write them to the user's local pi config under ~/.pi/agent/skills/ by default, not to the current project's .agents/skills or AGENTS.md, unless the user explicitly asks for a project-local skill.",
+			"category": "workflow",
+			"negative": false,
+			"source": "user"
+		},
+		{
 			"id": "e0279a80-fab0-4ca7-b871-eb6ad3becaa4",
 			"rule": "When working on pi extensions from ~/pi-config-sync, do not edit the sync repo as the runtime source by default. First identify and confirm the local/applied extension path, edit that path for behavior changes, and only update pi-config-sync intentionally when the user asks to sync/persist/distribute the change.",
 			"category": "workflow",
@@ -67,6 +88,13 @@
 		{
 			"id": "ef46a0b1-491c-49d8-b404-9d699d126145",
 			"rule": "Do not implement scaffolding, component APIs, files, or inferred UI beyond the exact action the user explicitly approved. If the user asks to create only a folder, create only the folder and stop.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "f8997fcd-9c39-47aa-a0fa-5043639aa18f",
+			"rule": "When the user asks to review their latest code changes, do not make unsolicited edits or revert their choices. First inspect current files/diff, then report issues only if there are real problems. If an edit is needed, ask or limit changes to exactly what the user requested.",
 			"category": "workflow",
 			"negative": true,
 			"source": "user"
