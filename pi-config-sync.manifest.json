@@ -1,6 +1,6 @@
 {
 	"version": 1,
-	"exportedAt": "2026-06-11T14:44:07.158Z",
+	"exportedAt": "2026-06-18T14:52:36.892Z",
 	"host": "trv3892",
 	"configDir": "~/.pi/agent",
 	"managedFiles": [
@@ -10,9 +10,11 @@
 		"extensions/pi-config-sync/MEMORY_SYNC_PLAN.md",
 		"extensions/pi-config-sync/NOT_PLANNED_YET.md",
 		"extensions/pi-config-sync/index.ts",
+		"extensions/suggested-reply.ts",
 		"extensions/thinking-phrases/index.ts",
 		"extensions/thinking-phrases/phrases.txt",
 		"extensions/usage-report/index.ts",
+		"extensions/void.ts",
 		"memory/lessons.json",
 		"memory/manifest.json",
 		"memory/semantic.json",

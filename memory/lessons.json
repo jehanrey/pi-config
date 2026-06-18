@@ -9,10 +9,24 @@
 			"source": "user"
 		},
 		{
+			"id": "34baa9e7-afa1-497d-91c7-75444ac244ac",
+			"rule": "Do not propose or use formatting/inlining tricks to reduce CodeScene LOC/complexity in Prettier-managed code. Prefer meaningful extractions into functions outside the main function, especially when addressing CodeScene complex-method issues.",
+			"category": "coding",
+			"negative": true,
+			"source": "user"
+		},
+		{
 			"id": "75d0cb2b-59e9-4f12-8361-1d0d58e0764f",
 			"rule": "During review-comment triage, keep analysis scoped to the reviewed code unless the user explicitly asks for broader context. Do not include a 'same issue elsewhere' or wider-audit suggestion by default.",
 			"category": "review-triage",
 			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "e21d9f1c-65e0-4393-9881-6fe5694e7bef",
+			"rule": "When triaging code review comments, be more critical: compare the suggested change against pre-branch/origin behavior and the PR goal before marking it warranted. A suggestion that improves behavior can still be not warranted if it introduces new behavior outside the PR's intended compatibility scope.",
+			"category": "review-triage",
+			"negative": false,
 			"source": "user"
 		},
 		{
@@ -44,6 +58,13 @@
 			"source": "user"
 		},
 		{
+			"id": "1ece4167-a6c7-42a1-b6d2-b8ef22a46a37",
+			"rule": "Do not anchor workflow decisions on exact trigger words. Infer the user's intent from the whole context, task framing, prior discussion, and whether a concrete implementation has been approved. If intent is investigative/review/planning, stay non-mutating and report findings. If intent clearly delegates execution of a concrete change, proceed. When uncertain, ask a short confirmation before mutating.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
 			"id": "5642f44c-4db3-4b07-b5c1-ae02b8df8884",
 			"rule": "When creating or updating a user-authored pi skill in ~/.pi/agent/skills, also sync it into ~/pi-config-sync: copy the skill folder, update extensions/pi-config-sync/index.ts MANAGED_SKILL_DIRS, and update pi-config-sync.manifest.json managedFiles/managedRoots unless the user explicitly says not to sync it.",
 			"category": "workflow",
@@ -53,6 +74,27 @@
 		{
 			"id": "56b2a70e-1d8d-45c3-a06d-6122981e20bc",
 			"rule": "Do not test or rely on a just-edited pi extension tool in the same session by calling the registered tool unless its runtime implementation has been verified active. File diffs can show new code while the loaded tool remains old; use /reload/new session and verify behavior, or avoid the tool.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "57eb9e55-f2f4-4e22-9633-adcbcb9f9a41",
+			"rule": "In pi-config-sync, do not add or modify user-authored skills without checking all skill sync invariants: local ~/.pi/agent/skills/*, repo skills/*, extensions/pi-config-sync MANAGED_SKILL_DIRS, and pi-config-sync.manifest.json managedFiles/managedRoots must agree. Run an explicit inventory check before saying skill sync is complete.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "59fa2d09-7408-4ac4-946f-eb2da6918abc",
+			"rule": "Do not lead the user into a false binary or over-constrained solution space. When debugging races or async flows, explicitly consider simple sequencing fixes that preserve all required side effects (e.g. eager synchronous state alignment before async execution) before suggesting larger guard/suppression mechanisms. If an option may be incomplete or risky, state uncertainty and ask to validate rather than presenting it as the main path.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "60db577d-4af5-4b90-98be-890d6c0f6ba0",
+			"rule": "Do not treat naming-direction or design-preference discussion as implementation approval. When the user says a name/API \"should\" reflect something or asks whether a rename is warranted, first propose options and wait for explicit selection/approval before editing files. Positive wording about a direction is not approval of a specific name or implementation.",
 			"category": "workflow",
 			"negative": true,
 			"source": "user"
@@ -72,10 +114,24 @@
 			"source": "user"
 		},
 		{
+			"id": "936ec307-932d-4cde-a91f-7ab0e9f1fe3b",
+			"rule": "During grill-me/design questioning, do not continue down a branch after the user's prior answer has already resolved it. Reconcile each new question against established decisions first, and if a question is invalid under those decisions, state that and move on instead of leading the user toward a contradictory design.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
 			"id": "cfa7a0cf-05fc-48bf-b971-64fac53cc52f",
 			"rule": "When creating or updating general pi skills for the user, write them to the user's local pi config under ~/.pi/agent/skills/ by default, not to the current project's .agents/skills or AGENTS.md, unless the user explicitly asks for a project-local skill.",
 			"category": "workflow",
 			"negative": false,
+			"source": "user"
+		},
+		{
+			"id": "d8f8c73c-aaf9-40f7-9a44-8b2205ed7652",
+			"rule": "Do not wait for magic words like \"implement\" in every case, but distinguish approval from exploration by context: infer implementation approval only when there is a concrete proposed action/plan/name/API already on the table and the user affirmatively accepts it. If the user is still shaping criteria, expressing preferences, or adding constraints without selecting a concrete option, continue discussion and ask/propose before editing.",
+			"category": "workflow",
+			"negative": true,
 			"source": "user"
 		},
 		{

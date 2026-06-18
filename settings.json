@@ -1,8 +1,8 @@
 {
-  "lastChangelogVersion": "0.74.2",
+  "lastChangelogVersion": "0.79.6",
   "defaultProvider": "github-copilot",
   "defaultModel": "gpt-5.5",
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "medium",
   "theme": "github-dark-colorblind",
   "packages": [
     "npm:pi-total-recall",
@@ -20,5 +20,5 @@
   "compaction": {
     "enabled": false
   },
-  "hideThinkingBlock": true
+  "hideThinkingBlock": false
 }
