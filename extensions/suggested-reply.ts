@@ -1,6 +1,14 @@
 import { complete, type AssistantMessage, type UserMessage } from "@earendil-works/pi-ai";
-import { CustomEditor, type ExtensionAPI, type ExtensionContext, type KeybindingsManager } from "@earendil-works/pi-coding-agent";
-import { CURSOR_MARKER, matchesKey, truncateToWidth, visibleWidth, type EditorTheme, type TUI } from "@earendil-works/pi-tui";
+import { CustomEditor, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
+import {
+	CURSOR_MARKER,
+	matchesKey,
+	truncateToWidth,
+	visibleWidth,
+	type AutocompleteProvider,
+	type EditorComponent,
+	type TUI,
+} from "@earendil-works/pi-tui";
 
 const SYSTEM_PROMPT = `You generate one concise suggested next user reply for a terminal coding-agent chat.
 
@@ -103,31 +111,97 @@ export default function suggestedReply(pi: ExtensionAPI) {
 		activeTui?.requestRender();
 	};
 
-	class SuggestedReplyEditor extends CustomEditor {
-		constructor(tui: TUI, theme: EditorTheme, keybindings: KeybindingsManager) {
-			super(tui, theme, keybindings);
+	class SuggestedReplyEditor implements EditorComponent {
+		constructor(
+			private readonly base: EditorComponent,
+			private readonly tui: TUI,
+		) {
 			activeTui = tui;
 		}
 
+		get onSubmit(): ((text: string) => void) | undefined {
+			return this.base.onSubmit;
+		}
+
+		set onSubmit(handler: ((text: string) => void) | undefined) {
+			this.base.onSubmit = handler;
+		}
+
+		get onChange(): ((text: string) => void) | undefined {
+			return this.base.onChange;
+		}
+
+		set onChange(handler: ((text: string) => void) | undefined) {
+			this.base.onChange = handler;
+		}
+
+		get focused(): boolean {
+			return (this.base as EditorComponent & { focused?: boolean }).focused ?? false;
+		}
+
+		set focused(value: boolean) {
+			(this.base as EditorComponent & { focused?: boolean }).focused = value;
+		}
+
+		get borderColor(): ((str: string) => string) | undefined {
+			return this.base.borderColor;
+		}
+
+		set borderColor(color: ((str: string) => string) | undefined) {
+			this.base.borderColor = color;
+		}
+
+		getText(): string {
+			return this.base.getText();
+		}
+
+		setText(text: string): void {
+			this.base.setText(text);
+		}
+
+		getExpandedText(): string {
+			return this.base.getExpandedText?.() ?? this.base.getText();
+		}
+
+		addToHistory(text: string): void {
+			this.base.addToHistory?.(text);
+		}
+
+		insertTextAtCursor(text: string): void {
+			this.base.insertTextAtCursor?.(text);
+		}
+
+		setAutocompleteProvider(provider: AutocompleteProvider): void {
+			this.base.setAutocompleteProvider?.(provider);
+		}
+
+		setPaddingX(padding: number): void {
+			this.base.setPaddingX?.(padding);
+		}
+
+		setAutocompleteMaxVisible(maxVisible: number): void {
+			this.base.setAutocompleteMaxVisible?.(maxVisible);
+		}
+
 		handleInput(data: string): void {
-			if (matchesKey(data, "tab") && this.getText() === "" && suggestion.trim()) {
-				this.setText(suggestion);
+			if (matchesKey(data, "tab") && this.base.getText() === "" && suggestion.trim()) {
+				this.base.setText(suggestion);
 				suggestion = "";
 				this.tui.requestRender();
 				return;
 			}
 
-			super.handleInput(data);
+			this.base.handleInput(data);
 
-			if (this.getText() !== "" && suggestion) {
+			if (this.base.getText() !== "" && suggestion) {
 				suggestion = "";
 				this.tui.requestRender();
 			}
 		}
 
 		render(width: number): string[] {
-			const lines = super.render(width);
-			if (this.getText() !== "" || !suggestion.trim() || lines.length < 3 || width <= 1) {
+			const lines = this.base.render(width);
+			if (this.base.getText() !== "" || !suggestion.trim() || lines.length < 3 || width <= 1) {
 				return lines;
 			}
 
@@ -141,13 +215,25 @@ export default function suggestedReply(pi: ExtensionAPI) {
 			lines[1] = `${cursor}${ghost}${padding}`;
 			return lines;
 		}
+
+		invalidate(): void {
+			this.base.invalidate();
+		}
+
+		dispose(): void {
+			(this.base as EditorComponent & { dispose?: () => void }).dispose?.();
+		}
 	}
 
 	pi.on("session_start", (_event, ctx) => {
 		if (ctx.mode !== "tui") return;
 
 		styleGhostText = (text: string) => ctx.ui.theme.fg("dim", text);
-		ctx.ui.setEditorComponent((tui, theme, keybindings) => new SuggestedReplyEditor(tui, theme, keybindings));
+		const previousEditor = ctx.ui.getEditorComponent();
+		ctx.ui.setEditorComponent((tui, theme, keybindings) => {
+			const base = previousEditor?.(tui, theme, keybindings) ?? new CustomEditor(tui, theme, keybindings);
+			return new SuggestedReplyEditor(base, tui);
+		});
 	});
 
 	pi.on("session_shutdown", () => {

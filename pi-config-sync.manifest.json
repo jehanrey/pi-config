@@ -1,9 +1,10 @@
 {
 	"version": 1,
-	"exportedAt": "2026-06-18T14:52:36.892Z",
+	"exportedAt": "2026-07-13T05:48:19.622Z",
 	"host": "trv3892",
 	"configDir": "~/.pi/agent",
 	"managedFiles": [
+		"extensions/audit-branches.ts",
 		"extensions/clipboard/index.ts",
 		"extensions/double-escape-clear.ts",
 		"extensions/git-commit.ts",
@@ -19,9 +20,6 @@
 		"memory/manifest.json",
 		"memory/semantic.json",
 		"settings.json",
-		"skills/ask-user-question/SKILL.md",
-		"skills/dissect-plan/SKILL.md",
-		"skills/triage-review-comment/SKILL.md",
 		"themes/electron-highlighter.json",
 		"themes/github-dark-default.json"
 	],
@@ -35,9 +33,6 @@
 		"prompts/**",
 		"extensions/**",
 		"themes/**",
-		"skills/ask-user-question/**",
-		"skills/dissect-plan/**",
-		"skills/triage-review-comment/**",
 		"memory/**"
 	],
 	"excludedRoots": [

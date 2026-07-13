@@ -96,6 +96,21 @@ async function configureVoidDir(ctx: ExtensionCommandContext, requestedPath?: st
 	return config;
 }
 
+async function createPersistedVoidSession(target: string): Promise<string> {
+	const sessionManager = SessionManager.create(target);
+	const sessionFile = sessionManager.getSessionFile();
+	const header = sessionManager.getHeader();
+
+	if (!sessionFile || !header) throw new Error(`Could not create a void session for ${target}`);
+
+	// SessionManager.create() allocates a session path but does not write the header until the
+	// first persisted assistant message. switchSession() needs an existing header to restore
+	// the replacement cwd, otherwise it falls back to the current process cwd.
+	await writeFile(sessionFile, `${JSON.stringify(header)}\n`, { flag: "wx" });
+
+	return sessionFile;
+}
+
 async function navigateToVoid(ctx: ExtensionCommandContext, voidDir: string): Promise<void> {
 	const target = resolveVoidDir(voidDir);
 	await mkdir(target, { recursive: true });
@@ -105,9 +120,7 @@ async function navigateToVoid(ctx: ExtensionCommandContext, voidDir: string): Pr
 		return;
 	}
 
-	const sessionManager = SessionManager.create(target);
-	const sessionFile = sessionManager.getSessionFile();
-	if (!sessionFile) throw new Error(`Could not create a void session for ${target}`);
+	const sessionFile = await createPersistedVoidSession(target);
 
 	await ctx.switchSession(sessionFile, {
 		withSession: async (ctx) => {

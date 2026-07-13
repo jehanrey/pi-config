@@ -9,6 +9,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const EXTENSION_CONFIG = path.join(homedir(), ".pi", "agent", "pi-config-sync.json");
 const DEFAULT_CONFIG_DIR = path.join(homedir(), ".pi", "agent");
+const AGENTS_CONFIG_DIR = path.join(homedir(), ".agents");
 const BACKUP_DIR_NAME = "config-sync-backups";
 const REPO_MANIFEST = "pi-config-sync.manifest.json";
 const DEFAULT_REPO_PATH = "~/pi-config-sync";
@@ -185,16 +186,29 @@ async function walkFiles(base: string, relativeDir: string, out: string[]): Prom
 	}
 }
 
+async function lockedSkillNames(base: string): Promise<Set<string>> {
+	const lockFile = path.join(base, ".skill-lock.json");
+	if (!existsSync(lockFile)) return new Set();
+	try {
+		const parsed = JSON.parse(await readFile(lockFile, "utf8")) as { skills?: Record<string, unknown> };
+		return new Set(Object.keys(parsed.skills ?? {}));
+	} catch {
+		return new Set();
+	}
+}
+
 async function listManagedSkillDirs(base: string): Promise<string[]> {
 	const skillsDir = path.join(base, "skills");
 	if (!existsSync(skillsDir)) return [];
 
+	const packageManagedSkills = await lockedSkillNames(base);
 	const skills: string[] = [];
 	for (const entry of await readdir(skillsDir, { withFileTypes: true })) {
-		// Sync only local, user-authored skill directories. Symlinked/package-managed
-		// skills remain installed through their own package mechanisms and should not
-		// block or pollute config sync exports.
+		// Sync only local, user-authored skill directories. Symlinked and
+		// .skill-lock-managed skills remain installed through their own package
+		// mechanisms and should not block or pollute config sync exports.
 		if (!entry.isDirectory()) continue;
+		if (packageManagedSkills.has(entry.name)) continue;
 		const relativeDir = `skills/${entry.name}`;
 		if (shouldExclude(relativeDir)) continue;
 		if (existsSync(path.join(skillsDir, entry.name, "SKILL.md"))) skills.push(entry.name);
@@ -202,7 +216,7 @@ async function listManagedSkillDirs(base: string): Promise<string[]> {
 	return skills.sort();
 }
 
-async function listManagedFiles(base: string): Promise<string[]> {
+async function listManagedFiles(base: string, skillsBase = base): Promise<string[]> {
 	const files: string[] = [];
 	for (const file of MANAGED_FILES) {
 		if (!shouldExclude(file) && existsSync(path.join(base, file))) files.push(file);
@@ -210,21 +224,25 @@ async function listManagedFiles(base: string): Promise<string[]> {
 	for (const dir of MANAGED_DIRS) {
 		if (!shouldExclude(dir)) await walkFiles(base, dir, files);
 	}
-	for (const skill of await listManagedSkillDirs(base)) {
+	for (const skill of await listManagedSkillDirs(skillsBase)) {
 		const dir = `skills/${skill}`;
-		if (!shouldExclude(dir)) await walkFiles(base, dir, files);
+		if (!shouldExclude(dir)) await walkFiles(skillsBase, dir, files);
 	}
 	return Array.from(new Set(files)).sort();
+}
+
+function managedPath(base: string, skillsBase: string, relativePath: string): string {
+	return relativePath.startsWith("skills/") ? path.join(skillsBase, relativePath) : path.join(base, relativePath);
 }
 
 async function hashFile(file: string): Promise<string> {
 	return createHash("sha256").update(await readFile(file)).digest("hex");
 }
 
-async function fileMap(base: string): Promise<FileMap> {
+async function fileMap(base: string, skillsBase = base): Promise<FileMap> {
 	const map: FileMap = new Map();
-	for (const file of await listManagedFiles(base)) {
-		map.set(file, await hashFile(path.join(base, file)));
+	for (const file of await listManagedFiles(base, skillsBase)) {
+		map.set(file, await hashFile(managedPath(base, skillsBase, file)));
 	}
 	return map;
 }
@@ -264,15 +282,15 @@ function formatChanges(title: string, changes: PlannedChanges): string {
 	return lines.join("\n");
 }
 
-async function applyChanges(sourceBase: string, targetBase: string, changes: PlannedChanges): Promise<void> {
+async function applyChanges(sourceBase: string, targetBase: string, changes: PlannedChanges, sourceSkillsBase = sourceBase, targetSkillsBase = targetBase): Promise<void> {
 	for (const file of [...changes.added, ...changes.modified]) {
-		const from = path.join(sourceBase, file);
-		const to = path.join(targetBase, file);
+		const from = managedPath(sourceBase, sourceSkillsBase, file);
+		const to = managedPath(targetBase, targetSkillsBase, file);
 		await mkdir(path.dirname(to), { recursive: true });
 		await copyFile(from, to);
 	}
 	for (const file of changes.deleted) {
-		await rm(path.join(targetBase, file), { force: true });
+		await rm(managedPath(targetBase, targetSkillsBase, file), { force: true });
 	}
 }
 
@@ -296,6 +314,7 @@ async function writeRepoManifest(config: SyncConfig, exportedFiles: string[]): P
 		exportedAt: new Date().toISOString(),
 		host: hostname(),
 		configDir: portablePath(config.configDir),
+		skillsDir: portablePath(AGENTS_CONFIG_DIR),
 		managedFiles: Array.from(new Set([...exportedFiles, ...repoMemoryFiles])).sort(),
 		managedRoots: [
 			...MANAGED_FILES,
@@ -428,13 +447,13 @@ async function ensureRepoScaffold(repoPath: string): Promise<void> {
 	}
 }
 
-async function makeBackup(configDir: string): Promise<string> {
+async function makeBackup(configDir: string, skillsDir = configDir): Promise<string> {
 	const backupRoot = path.join(configDir, BACKUP_DIR_NAME);
 	const backupPath = path.join(backupRoot, timestamp());
 	await mkdir(backupPath, { recursive: true });
-	const current = await fileMap(configDir);
-	await applyChanges(configDir, backupPath, { added: Array.from(current.keys()), modified: [], deleted: [] });
-	await writeFile(path.join(backupPath, "backup.manifest.json"), JSON.stringify({ createdAt: new Date().toISOString(), source: configDir, files: Array.from(current.keys()) }, null, "\t") + "\n");
+	const current = await fileMap(configDir, skillsDir);
+	await applyChanges(configDir, backupPath, { added: Array.from(current.keys()), modified: [], deleted: [] }, skillsDir, backupPath);
+	await writeFile(path.join(backupPath, "backup.manifest.json"), JSON.stringify({ createdAt: new Date().toISOString(), source: configDir, skillsSource: skillsDir, files: Array.from(current.keys()) }, null, "\t") + "\n");
 	return backupPath;
 }
 
@@ -477,7 +496,7 @@ export default function (pi: ExtensionAPI) {
 
 				if (args.command === "status") {
 					if (!existsSync(config.repoPath)) throw new Error(`Repo path does not exist: ${config.repoPath}`);
-					const changes = planChanges(await fileMap(config.configDir), await fileMap(config.repoPath));
+					const changes = planChanges(await fileMap(config.configDir, AGENTS_CONFIG_DIR), await fileMap(config.repoPath));
 					ctx.ui.notify(formatChanges(`Live config -> repo (${config.repoPath})`, changes), hasChanges(changes) ? "warning" : "info");
 					return;
 				}
@@ -491,14 +510,14 @@ export default function (pi: ExtensionAPI) {
 
 				if (args.command === "export") {
 					await ensureRepoScaffold(config.repoPath);
-					const source = await fileMap(config.configDir);
+					const source = await fileMap(config.configDir, AGENTS_CONFIG_DIR);
 					const changes = planChanges(source, await fileMap(config.repoPath));
 					if (args.dryRun) {
 						ctx.ui.notify(formatChanges("Dry run export: live config -> repo", changes), hasChanges(changes) ? "warning" : "info");
 						return;
 					}
 					const memorySummary = await exportMemoryToRepo(config);
-					await applyChanges(config.configDir, config.repoPath, changes);
+					await applyChanges(config.configDir, config.repoPath, changes, AGENTS_CONFIG_DIR, config.repoPath);
 					await writeRepoManifest(config, Array.from(source.keys()));
 					ctx.ui.notify(`${formatChanges(`Exported live config to ${config.repoPath}`, changes)}\n\n${formatMemoryExportSummary(memorySummary)}`, hasChanges(changes) ? "info" : "info");
 					return;
@@ -508,7 +527,7 @@ export default function (pi: ExtensionAPI) {
 					if (!existsSync(config.repoPath)) throw new Error(`Repo path does not exist: ${config.repoPath}`);
 					const source = await fileMap(config.repoPath);
 					if (source.size === 0 && !memoryFilesExist(config.repoPath)) throw new Error(`No managed config files found in repo; refusing to import from ${config.repoPath}`);
-					const changes = planChanges(source, await fileMap(config.configDir));
+					const changes = planChanges(source, await fileMap(config.configDir, AGENTS_CONFIG_DIR));
 					if (args.dryRun) {
 						ctx.ui.notify(formatChanges("Dry run import: repo -> live config", changes), hasChanges(changes) ? "warning" : "info");
 						return;
@@ -517,8 +536,8 @@ export default function (pi: ExtensionAPI) {
 						const ok = await ctx.ui.confirm("Import pi config?", `${formatChanges("Repo -> live config", changes)}\n\nA backup will be created first. Pi will not reload automatically.`);
 						if (!ok) return;
 					}
-					const backupPath = hasChanges(changes) ? await makeBackup(config.configDir) : undefined;
-					if (hasChanges(changes)) await applyChanges(config.repoPath, config.configDir, changes);
+					const backupPath = hasChanges(changes) ? await makeBackup(config.configDir, AGENTS_CONFIG_DIR) : undefined;
+					if (hasChanges(changes)) await applyChanges(config.repoPath, config.configDir, changes, config.repoPath, AGENTS_CONFIG_DIR);
 					const memorySummary = await importMemoryFromRepo(config);
 					ctx.ui.notify(`${hasChanges(changes) ? formatChanges("Imported repo config into live pi config", changes) : "Import: no managed config changes."}\n\n${backupPath ? `Backup: ${backupPath}\n` : ""}${formatMemoryImportSummary(memorySummary)}\nRun /reload when ready.`, "info");
 					return;
@@ -533,7 +552,7 @@ export default function (pi: ExtensionAPI) {
 					if (!chosen) return;
 					const backupPath = path.join(backupRoot, chosen);
 					if (!existsSync(backupPath) || !(await stat(backupPath)).isDirectory()) throw new Error(`Backup not found: ${chosen}`);
-					const changes = planChanges(await restoreSourceMap(backupPath), await fileMap(config.configDir));
+					const changes = planChanges(await restoreSourceMap(backupPath), await fileMap(config.configDir, AGENTS_CONFIG_DIR));
 					if (args.dryRun) {
 						ctx.ui.notify(formatChanges(`Dry run restore: ${chosen} -> live config`, changes), hasChanges(changes) ? "warning" : "info");
 						return;
@@ -546,8 +565,8 @@ export default function (pi: ExtensionAPI) {
 						const ok = await ctx.ui.confirm("Restore pi config backup?", `${formatChanges(`${chosen} -> live config`, changes)}\n\nA pre-restore backup will be created first. Pi will not reload automatically.`);
 						if (!ok) return;
 					}
-					const preRestoreBackup = await makeBackup(config.configDir);
-					await applyChanges(backupPath, config.configDir, changes);
+					const preRestoreBackup = await makeBackup(config.configDir, AGENTS_CONFIG_DIR);
+					await applyChanges(backupPath, config.configDir, changes, backupPath, AGENTS_CONFIG_DIR);
 					ctx.ui.notify(`${formatChanges(`Restored backup ${chosen}`, changes)}\n\nPre-restore backup: ${preRestoreBackup}\nRun /reload when ready.`, "info");
 					return;
 				}
