@@ -1,5 +1,5 @@
-import { complete, type AssistantMessage, type UserMessage } from "@earendil-works/pi-ai";
-import { CustomEditor, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { type AssistantMessage, type UserMessage } from "@earendil-works/pi-ai";
+import { CustomEditor, ModelRuntime, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
 import {
 	CURSOR_MARKER,
 	matchesKey,
@@ -103,6 +103,7 @@ export default function suggestedReply(pi: ExtensionAPI) {
 	let suggestion = "";
 	let generation = 0;
 	let activeTui: TUI | undefined;
+	let modelRuntime: ModelRuntime | undefined;
 	let styleGhostText: (text: string) => string = (text) => text;
 
 	const clearSuggestion = () => {
@@ -117,6 +118,48 @@ export default function suggestedReply(pi: ExtensionAPI) {
 			private readonly tui: TUI,
 		) {
 			activeTui = tui;
+		}
+
+		// Pi detects CustomEditor capabilities on the outer component. Forward them
+		// so its Escape/shortcut handlers remain attached to the wrapped editor.
+		private get customBase(): CustomEditor {
+			return this.base as CustomEditor;
+		}
+
+		get actionHandlers() {
+			return this.customBase.actionHandlers;
+		}
+
+		get onEscape(): (() => void) | undefined {
+			return this.customBase.onEscape;
+		}
+
+		set onEscape(handler: (() => void) | undefined) {
+			this.customBase.onEscape = handler;
+		}
+
+		get onCtrlD(): (() => void) | undefined {
+			return this.customBase.onCtrlD;
+		}
+
+		set onCtrlD(handler: (() => void) | undefined) {
+			this.customBase.onCtrlD = handler;
+		}
+
+		get onPasteImage(): (() => void) | undefined {
+			return this.customBase.onPasteImage;
+		}
+
+		set onPasteImage(handler: (() => void) | undefined) {
+			this.customBase.onPasteImage = handler;
+		}
+
+		get onExtensionShortcut(): ((data: string) => boolean) | undefined {
+			return this.customBase.onExtensionShortcut;
+		}
+
+		set onExtensionShortcut(handler: ((data: string) => boolean) | undefined) {
+			this.customBase.onExtensionShortcut = handler;
 		}
 
 		get onSubmit(): ((text: string) => void) | undefined {
@@ -258,8 +301,9 @@ export default function suggestedReply(pi: ExtensionAPI) {
 		const currentGeneration = ++generation;
 
 		try {
-			const auth = await ctx.modelRegistry.getApiKeyAndHeaders(ctx.model);
-			if (!auth.ok || !auth.apiKey) return;
+			modelRuntime ??= await ModelRuntime.create();
+			const model = modelRuntime.getModel(ctx.model.provider, ctx.model.id);
+			if (!model) return;
 
 			const prompt = `Last user message:\n${exchange.userText}\n\nAssistant response:\n${exchange.assistantText}\n\nSuggested next user reply:`;
 			const userMessage: UserMessage = {
@@ -268,11 +312,10 @@ export default function suggestedReply(pi: ExtensionAPI) {
 				timestamp: Date.now(),
 			};
 
-			const response = await complete(
-				ctx.model,
-				{ systemPrompt: SYSTEM_PROMPT, messages: [userMessage] },
-				{ apiKey: auth.apiKey, headers: auth.headers },
-			);
+			const response = await modelRuntime.complete(model, {
+				systemPrompt: SYSTEM_PROMPT,
+				messages: [userMessage],
+			});
 
 			if (currentGeneration !== generation) return;
 			if (ctx.ui.getEditorText().trim()) return;

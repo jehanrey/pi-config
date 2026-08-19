@@ -1,8 +1,8 @@
 {
 	"version": 1,
-	"exportedAt": "2026-07-13T05:48:19.619Z",
+	"exportedAt": "2026-08-19T07:13:24.296Z",
 	"host": "trv3892",
 	"sourceDb": "~/.pi/memory/memory.db",
-	"semanticCount": 5,
-	"lessonCount": 25
+	"semanticCount": 7,
+	"lessonCount": 29
 }

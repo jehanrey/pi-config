@@ -107,6 +107,13 @@
 			"source": "user"
 		},
 		{
+			"id": "6cf6c4f5-37f0-4cc7-b761-2847cec62ba4",
+			"rule": "Do not create issue-tracker artifacts during Wayfinder charting until the user explicitly approves the concrete map and ticket set and asks for issue creation. Approval of planning direction is not approval to mutate the tracker.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
 			"id": "7a2a8777-423f-494b-be5d-96ed7baaa72b",
 			"rule": "When the user responds positively to a proposed implementation plan with phrases like 'that sounds reasonable', infer approval to implement unless they explicitly say not to write code or ask only for more discussion.",
 			"category": "workflow",
@@ -135,6 +142,20 @@
 			"source": "user"
 		},
 		{
+			"id": "afd3117f-0cbd-4fd9-87f4-6bf0800372da",
+			"rule": "In hs-web-app Wayfinder work, do not call the completed map or ticket resolutions \"specs\"; refer to them as the planning map, implementation guidance, or resolved decisions.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "c1c4bdac-2cfe-47a0-90a7-f3effb7c4b57",
+			"rule": "When branch state is relevant, re-run `git branch --show-current` immediately before claiming the user is still on a branch; do not rely on an earlier check after the user may have switched branches.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
 			"id": "cfa7a0cf-05fc-48bf-b971-64fac53cc52f",
 			"rule": "When creating or updating general pi skills for the user, write them to the user's local pi config under ~/.pi/agent/skills/ by default, not to the current project's .agents/skills or AGENTS.md, unless the user explicitly asks for a project-local skill.",
 			"category": "workflow",
@@ -158,6 +179,13 @@
 		{
 			"id": "e44b7b06-1b53-4bf3-ba04-7bdd08a09edc",
 			"rule": "Do not default to shortcut or symptom-treating fixes. Prefer fixing the actual root cause. If suggesting a shortcut/workaround, explicitly label it as a tradeoff/caveat and explain why it is not the root-cause fix.",
+			"category": "workflow",
+			"negative": true,
+			"source": "user"
+		},
+		{
+			"id": "e7e567a1-f961-4eb3-9401-47b5f52f0096",
+			"rule": "Never infer authorization for external mutations from general workflow approval. Content approval, planning approval, \"proceed,\" skill invocation, existing labels, authentication, or prior external usage do not authorize creating or modifying GitHub issues, Jira tickets, PRs, comments, remote branches, uploads, or any other external artifact. Default to local work and obtain explicit permission for the exact external write immediately beforehand.",
 			"category": "workflow",
 			"negative": true,
 			"source": "user"

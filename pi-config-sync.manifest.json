@@ -1,9 +1,11 @@
 {
 	"version": 1,
-	"exportedAt": "2026-07-13T05:48:19.622Z",
+	"exportedAt": "2026-08-19T07:13:24.298Z",
 	"host": "trv3892",
 	"configDir": "~/.pi/agent",
+	"skillsDir": "~/.agents",
 	"managedFiles": [
+		"AGENTS.md",
 		"extensions/audit-branches.ts",
 		"extensions/clipboard/index.ts",
 		"extensions/double-escape-clear.ts",
@@ -11,6 +13,7 @@
 		"extensions/pi-config-sync/MEMORY_SYNC_PLAN.md",
 		"extensions/pi-config-sync/NOT_PLANNED_YET.md",
 		"extensions/pi-config-sync/index.ts",
+		"extensions/sprout.ts",
 		"extensions/suggested-reply.ts",
 		"extensions/thinking-phrases/index.ts",
 		"extensions/thinking-phrases/phrases.txt",
@@ -19,7 +22,12 @@
 		"memory/lessons.json",
 		"memory/manifest.json",
 		"memory/semantic.json",
+		"models.json",
 		"settings.json",
+		"skills/ask-user-question/SKILL.md",
+		"skills/current-work/SKILL.md",
+		"skills/dissect-plan/SKILL.md",
+		"skills/triage-review-comment/SKILL.md",
 		"themes/electron-highlighter.json",
 		"themes/github-dark-default.json"
 	],
@@ -33,6 +41,10 @@
 		"prompts/**",
 		"extensions/**",
 		"themes/**",
+		"skills/ask-user-question/**",
+		"skills/current-work/**",
+		"skills/dissect-plan/**",
+		"skills/triage-review-comment/**",
 		"memory/**"
 	],
 	"excludedRoots": [

@@ -14,6 +14,12 @@
 			"source": "user"
 		},
 		{
+			"key": "pref.external_writes",
+			"value": "NEVER write, create, edit, comment, close, publish, upload, or otherwise mutate anything on an external service without explicit permission for that exact external action. Always assume artifacts should remain local. Ask permission immediately before any external write, even if the user approved the content, said proceed, invoked a workflow, or external tooling/configuration is available.",
+			"confidence": 0.95,
+			"source": "user"
+		},
+		{
 			"key": "pref.pi.skills_location",
 			"value": "All Pi skills should live in ~/.agents/skills. ~/.pi/agent/skills should not store separate skill copies; avoid per-skill symlinks there because Pi scans both global roots and creates name-collision warnings. Pi config sync should sync only user-authored skills from ~/.agents/skills, excluding .skill-lock package-managed skills.",
 			"confidence": 0.95,
@@ -28,6 +34,12 @@
 		{
 			"key": "project.pi_config_sync.authored_skills_allowlist",
 			"value": "In ~/pi-config-sync, only user-authored skills should be synced. Current allowlist is MANAGED_SKILL_DIRS = [\"triage-review-comment\", \"dissect-plan\"] in extensions/pi-config-sync/index.ts. When adding a new skill authored by the user, update this allowlist and manifest managedRoots/managedFiles accordingly.",
+			"confidence": 0.95,
+			"source": "user"
+		},
+		{
+			"key": "workflow.wayfinder_artifact_location",
+			"value": "For hs-web-app Wayfinder planning, default to local Markdown under .wayfinder/ as used previously. Before writing even local map/ticket files, present the proposed map and ask for explicit approval and location confirmation. Never infer GitHub publication approval from discussion approval, `proceed`, existing labels, or gh availability.",
 			"confidence": 0.95,
 			"source": "user"
 		}
